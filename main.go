@@ -5,37 +5,32 @@ import (
 	"log"
 	"net/http"
 
+	. "github.com/carloshpdoc/go-api/config"
+	. "github.com/carloshpdoc/go-api/config/dao"
+	movierouter "github.com/carloshpdoc/go-api/router"
 	"github.com/gorilla/mux"
 )
 
-func AllMoviesEndPoint(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "não foi implementado !")
-}
+var dao = MovieDAO{}
+var config = Config{}
 
-func FindMovieEndpoint(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "não foi implementado !")
-}
+func init() {
+	config.Read()
 
-func CreateMovieEndPoint(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "não foi implementado !")
-}
-
-func UpdateMovieEndPoint(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "não foi implementado !")
-}
-
-func DeleteMovieEndPoint(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "não foi implementado !")
+	dao.Server = config.Server
+	dao.Database = config.Database
+	dao.Connect()
 }
 
 func main() {
 	r := mux.NewRouter()
-	r.HandleFunc("/movies", AllMoviesEndPoint).Methods("GET")
-	r.HandleFunc("/movies", CreateMovieEndPoint).Methods("POST")
-	r.HandleFunc("/movies", UpdateMovieEndPoint).Methods("PUT")
-	r.HandleFunc("/movies", DeleteMovieEndPoint).Methods("DELETE")
-	r.HandleFunc("/movies/{id}", FindMovieEndpoint).Methods("GET")
-	if err := http.ListenAndServe(":8089", r); err != nil {
-		log.Fatal(err)
-	}
+	r.HandleFunc("/api/v1/movies", movierouter.GetAll).Methods("GET")
+	r.HandleFunc("/api/v1/movies/{id}", movierouter.GetByID).Methods("GET")
+	r.HandleFunc("/api/v1/movies", movierouter.Create).Methods("POST")
+	r.HandleFunc("/api/v1/movies/{id}", movierouter.Update).Methods("PUT")
+	r.HandleFunc("/api/v1/movies/{id}", movierouter.Delete).Methods("DELETE")
+
+	var port = ":8089"
+	fmt.Println("Server running in port:", port)
+	log.Fatal(http.ListenAndServe(port, r))
 }
